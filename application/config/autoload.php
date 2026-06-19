@@ -13,4 +13,4 @@ $autoload['config'] = array();
 
 $autoload['language'] = array();
 
-$autoload['model'] = array('Billing_model', 'Check_model', 'Product_model', 'Other_model', 'Customer_model', 'Quotation_model', 'HR_model', 'Report_model', 'Purchase_model', 'Bill_model');
+$autoload['model'] = array('Gate_model', 'Report_model', 'User_model', 'Visitor_model');

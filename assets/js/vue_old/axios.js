@@ -633,7 +633,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  maxContentLength: -1,
 	
-	  validateStatus: function validateStatus(status) {
+	  validatestatus: function validatestatus(status) {
 	    return status >= 200 && status < 300;
 	  }
 	};
@@ -875,9 +875,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {object} response The response.
 	 */
 	module.exports = function settle(resolve, reject, response) {
-	  var validateStatus = response.config.validateStatus;
+	  var validatestatus = response.config.validatestatus;
 	  // Note: status is not exposed by XDomainRequest
-	  if (!response.status || !validateStatus || validateStatus(response.status)) {
+	  if (!response.status || !validatestatus || validatestatus(response.status)) {
 	    resolve(response);
 	  } else {
 	    reject(createError(
