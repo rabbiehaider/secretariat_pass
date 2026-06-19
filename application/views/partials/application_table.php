@@ -36,9 +36,10 @@
                 </tr>
             <?php endforeach; ?>
             <?php if (empty($applications)): ?>
-                <tr><td colspan="7" class="text-center text-muted">No records found</td></tr>
+                <tr>
+                    <td colspan="7" class="text-center text-muted">No records found</td>
+                </tr>
             <?php endif; ?>
         </tbody>
     </table>
 </div>
-

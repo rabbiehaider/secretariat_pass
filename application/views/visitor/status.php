@@ -14,7 +14,7 @@
         <div class="form-row">
             <div class="form-group col-md-6">
                 <label>Tracking ID</label>
-                <input class="form-control" type="number" name="tracking_id" required>
+                <input class="form-control" name="tracking_id" placeholder="TRK-YYMMDD-XXXXXX" required>
             </div>
             <div class="form-group col-md-6">
                 <label>Phone</label>
@@ -30,7 +30,7 @@
         <div class="panel status-card mt-3">
             <div class="status-top">
                 <div>
-                    <span>Tracking ID #<?php echo (int) $application->id; ?></span>
+                    <span>Tracking ID <?php echo html_escape(visitor_tracking_id($application)); ?></span>
                     <h2><?php echo html_escape($application->name); ?></h2>
                 </div>
                 <span class="badge badge-status badge-<?php echo html_escape($application->status); ?>">
@@ -39,13 +39,19 @@
             </div>
 
             <dl class="card-grid">
-                <dt>Phone</dt><dd><?php echo html_escape($application->phone); ?></dd>
-                <dt>Visit Date</dt><dd><?php echo html_escape($application->visit_date); ?></dd>
-                <dt>Department</dt><dd><?php echo html_escape($application->department_name); ?></dd>
-                <dt>Person to Visit</dt><dd><?php echo html_escape($application->visit_to); ?></dd>
-                <dt>Purpose</dt><dd><?php echo html_escape($application->purpose); ?></dd>
+                <dt>Phone</dt>
+                <dd><?php echo html_escape($application->phone); ?></dd>
+                <dt>Visit Date</dt>
+                <dd><?php echo html_escape($application->visit_date); ?></dd>
+                <dt>Department</dt>
+                <dd><?php echo html_escape($application->department_name); ?></dd>
+                <dt>Person to Visit</dt>
+                <dd><?php echo html_escape($application->visit_to); ?></dd>
+                <dt>Purpose</dt>
+                <dd><?php echo html_escape($application->purpose); ?></dd>
                 <?php if ($application->status === 'rejected'): ?>
-                    <dt>Reject Reason</dt><dd><?php echo html_escape($application->rejected_reason); ?></dd>
+                    <dt>Reject Reason</dt>
+                    <dd><?php echo html_escape($application->rejected_reason); ?></dd>
                 <?php endif; ?>
             </dl>
 
@@ -62,10 +68,10 @@
 </div>
 
 <script>
-new Vue({
-    el: '#statusApp',
-    data: {
-        checking: false
-    }
-});
+    new Vue({
+        el: '#statusApp',
+        data: {
+            checking: false
+        }
+    });
 </script>

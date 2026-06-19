@@ -19,6 +19,7 @@
     </div>
     <div class="panel">
         <h2>Recent Applications</h2>
-        <?php $applications = $recent; include APPPATH . 'views/partials/application_table.php'; ?>
+        <?php $applications = $recent;
+        include APPPATH . 'views/partials/application_table.php'; ?>
     </div>
 </div>

@@ -43,7 +43,7 @@ class Admin extends CI_Controller
         }
 
         $pass_no = $this->vm->next_pass_no();
-        $token = bin2hex(openssl_random_pseudo_bytes(24));
+        $token = $this->vm->next_qr_token();
 
         $this->vm->approve($id, array(
             'pass_no' => $pass_no,

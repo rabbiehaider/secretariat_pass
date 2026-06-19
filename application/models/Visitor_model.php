@@ -23,15 +23,35 @@ class Visitor_model extends CI_Model
             ->row();
     }
 
-    public function find_for_visitor($id, $phone)
+    public function find_for_visitor($tracking_id, $phone)
     {
-        return $this->db
+        $tracking_id = trim($tracking_id);
+
+        if (ctype_digit($tracking_id)) {
+            return $this->db
+                ->select('visitor_applications.*, departments.name AS department_name')
+                ->join('departments', 'departments.id = visitor_applications.department_id', 'left')
+                ->where('visitor_applications.id', (int) $tracking_id)
+                ->where('visitor_applications.phone', $phone)
+                ->get('visitor_applications')
+                ->row();
+        }
+
+        $applications = $this->db
             ->select('visitor_applications.*, departments.name AS department_name')
             ->join('departments', 'departments.id = visitor_applications.department_id', 'left')
-            ->where('visitor_applications.id', (int) $id)
             ->where('visitor_applications.phone', $phone)
+            ->order_by('visitor_applications.id', 'DESC')
             ->get('visitor_applications')
-            ->row();
+            ->result();
+
+        foreach ($applications as $application) {
+            if ($this->tracking_id($application) === strtoupper($tracking_id)) {
+                return $application;
+            }
+        }
+
+        return null;
     }
 
     public function find_by_token($token)
@@ -91,5 +111,28 @@ class Visitor_model extends CI_Model
         }
 
         return $prefix . str_pad($next, 4, '0', STR_PAD_LEFT);
+    }
+
+    public function next_qr_token()
+    {
+        do {
+            $token = strtoupper(bin2hex(openssl_random_pseudo_bytes(5)));
+        } while ($this->db->where('qr_token', $token)->count_all_results('visitor_applications') > 0);
+
+        return $token;
+    }
+
+    public function tracking_id($application)
+    {
+        if (function_exists('visitor_tracking_id')) {
+            return visitor_tracking_id($application);
+        }
+
+        $date_source = !empty($application->created_at) ? $application->created_at : $application->visit_date;
+        $date_part = date('ymd', strtotime($date_source));
+        $date_part = substr($date_part, 0, 2) . (int) substr($date_part, 2, 2) . substr($date_part, 4, 2);
+        $seed = $application->id . '|' . $application->phone . '|' . $date_source;
+
+        return 'TRK-' . $date_part . '-' . strtoupper(substr(hash('sha256', $seed), 0, 6));
     }
 }

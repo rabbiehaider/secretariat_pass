@@ -19,3 +19,20 @@ if (!function_exists('get_client_ip')) {
         return $ip_address;
     }
 }
+
+if (!function_exists('visitor_tracking_id')) {
+    function visitor_tracking_id($application)
+    {
+        if (!$application || empty($application->id)) {
+            return '';
+        }
+
+        $date_source = !empty($application->created_at) ? $application->created_at : $application->visit_date;
+        $date_part = date('ymd', strtotime($date_source));
+        $date_part = substr($date_part, 0, 2) . (int) substr($date_part, 2, 2) . substr($date_part, 4, 2);
+        $seed = $application->id . '|' . $application->phone . '|' . $date_source;
+        $code = strtoupper(substr(hash('sha256', $seed), 0, 6));
+
+        return 'TRK-' . $date_part . '-' . $code;
+    }
+}

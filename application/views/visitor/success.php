@@ -4,7 +4,7 @@
         <h1>Application Submitted</h1>
         <p>Your application is waiting for admin approval.</p>
         <div class="receipt">
-            <strong>Tracking ID:</strong> <?php echo (int) $application->id; ?><br>
+            <strong>Tracking ID:</strong> <?php echo html_escape(visitor_tracking_id($application)); ?><br>
             <strong>Name:</strong> <?php echo html_escape($application->name); ?><br>
             <strong>Phone:</strong> <?php echo html_escape($application->phone); ?><br>
             <strong>Visit Date:</strong> <?php echo html_escape($application->visit_date); ?>

@@ -1,9 +1,9 @@
 Admin Info
 ----------------------------------------------
-Email: admin@secretariat.local
+Email: admin@gmail.com
 Password: admin123
 
 
-Email: gate@secretariat.local
+Email: gate@gmail.com
 Password: admin123
 

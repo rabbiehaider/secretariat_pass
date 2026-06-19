@@ -31,11 +31,17 @@ class Visitor extends CI_Controller
             redirect('/');
         }
 
+        $phone = trim($this->input->post('phone', true));
+        if (!preg_match('/^01[13-9][\d]{8}$/', $phone)) {
+            $this->session->set_flashdata('apply_error', 'Please enter a valid Bangladeshi mobile number.');
+            redirect('/');
+        }
+
         $photo = $this->upload_photo();
 
         $payload = array(
             'name' => trim($this->input->post('name', true)),
-            'phone' => trim($this->input->post('phone', true)),
+            'phone' => $phone,
             'nid' => trim($this->input->post('nid', true)),
             'address' => trim($this->input->post('address', true)),
             'purpose' => trim($this->input->post('purpose', true)),
@@ -96,7 +102,7 @@ class Visitor extends CI_Controller
         $data['error'] = '';
 
         if ($this->input->post()) {
-            $tracking_id = (int) $this->input->post('tracking_id', true);
+            $tracking_id = trim($this->input->post('tracking_id', true));
             $phone = trim($this->input->post('phone', true));
             $application = $this->vm->find_for_visitor($tracking_id, $phone);
 
