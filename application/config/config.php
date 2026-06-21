@@ -23,7 +23,14 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
-$config['base_url'] = "/";
+if (isset($_SERVER['HTTP_HOST'])) {
+	$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+	$script_dir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
+	$script_dir = trim($script_dir, '/');
+	$config['base_url'] = $protocol . '://' . $_SERVER['HTTP_HOST'] . ($script_dir ? '/' . $script_dir : '') . '/';
+} else {
+	$config['base_url'] = '/';
+}
 
 
 /*
@@ -382,7 +389,7 @@ $config['encryption_key'] ='c4ca4238a0b923820dcc509a6f75849b';
 $config['sess_driver'] = 'files';
 $config['sess_cookie_name'] = 'ci_session';
 $config['sess_expiration'] = 12 * 60 * 60;
-$config['sess_save_path'] = NULL;
+$config['sess_save_path'] = APPPATH.'cache';
 $config['sess_match_ip'] = FALSE;
 $config['sess_time_to_update'] = 300;
 $config['sess_regenerate_destroy'] = FALSE;
