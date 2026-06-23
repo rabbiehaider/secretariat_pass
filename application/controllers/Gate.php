@@ -18,50 +18,56 @@ class Gate extends CI_Controller
 
     public function verify()
     {
-        $token = trim($this->input->post('token', true));
-        $result = $this->verify_token($token);
+        $res = array('success' => false, 'message' => '');
+        try {
+            $request = json_decode($this->input->post('data'));
+            $token = $request && !empty($request->token) ? trim($request->token) : trim($this->input->post('token', true));
+            $res = $this->verify_token($token);
+        } catch (Exception $ex) {
+            $res = array('success' => false, 'status' => 'invalid', 'message' => $ex->getMessage());
+        }
 
         $this->output
             ->set_content_type('application/json')
-            ->set_output(json_encode($result));
+            ->set_output(json_encode($res));
     }
 
     private function verify_token($token)
     {
         if (!$token) {
-            return array('ok' => false, 'status' => 'invalid', 'message' => 'Empty QR token');
+            return array('success' => false, 'status' => 'invalid', 'message' => 'Empty QR token');
         }
 
         $application = $this->vm->find_by_token($token);
         if (!$application) {
             $this->gm->log(null, null, $token, 'invalid', 'Token not found');
-            return array('ok' => false, 'status' => 'invalid', 'message' => 'Invalid pass');
+            return array('success' => false, 'status' => 'invalid', 'message' => 'Invalid pass');
         }
 
         if ($application->status === 'pending') {
             $this->gm->log($application->id, $application->pass_no, $token, 'pending', 'Not approved yet');
-            return array('ok' => false, 'status' => 'pending', 'message' => 'Pass is still pending');
+            return array('success' => false, 'status' => 'pending', 'message' => 'Pass is still pending');
         }
 
         if ($application->status === 'rejected') {
             $this->gm->log($application->id, $application->pass_no, $token, 'rejected', 'Rejected application');
-            return array('ok' => false, 'status' => 'rejected', 'message' => 'Pass was rejected');
+            return array('success' => false, 'status' => 'rejected', 'message' => 'Pass was rejected');
         }
 
         if ($application->visit_date !== date('Y-m-d')) {
             $this->gm->log($application->id, $application->pass_no, $token, 'expired', 'Visit date mismatch');
-            return array('ok' => false, 'status' => 'expired', 'message' => 'Pass is not valid today');
+            return array('success' => false, 'status' => 'expired', 'message' => 'Pass is not valid today');
         }
 
         if ($this->gm->has_valid_entry($application->id)) {
             $this->gm->log($application->id, $application->pass_no, $token, 'already_used', 'Duplicate entry attempt');
-            return array('ok' => false, 'status' => 'already_used', 'message' => 'Pass already used');
+            return array('success' => false, 'status' => 'already_used', 'message' => 'Pass already used');
         }
 
         $this->gm->log($application->id, $application->pass_no, $token, 'valid', 'Entry allowed');
 
         return array(
-            'ok' => true,
+            'success' => true,
             'status' => 'valid',
             'message' => 'Valid pass. Entry allowed.',
             'visitor' => array(

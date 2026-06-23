@@ -37,7 +37,7 @@
         computed: {
             resultClass: function() {
                 if (!this.result.status) return '';
-                return this.result.ok ? 'result-ok' : 'result-bad';
+                return this.result.success ? 'result-ok' : 'result-bad';
             }
         },
         mounted: function() {
@@ -56,21 +56,20 @@
                 if (!token || this.busy) return;
                 this.busy = true;
                 var form = new FormData();
-                form.append('token', token);
-                axios.post('<?php echo site_url('gate/verify'); ?>', form)
-                    .then(function(response) {
-                        this.result = response.data;
-                    }.bind(this))
-                    .catch(function() {
-                        this.result = {
-                            ok: false,
-                            status: 'invalid',
-                            message: 'Verification failed'
-                        };
-                    }.bind(this))
-                    .then(function() {
-                        this.busy = false;
-                    }.bind(this));
+                form.append('data', JSON.stringify({
+                    token: token
+                }));
+                axios.post('<?php echo site_url('verify_gate_pass'); ?>', form).then(function(response) {
+                    this.result = response.data;
+                }.bind(this)).catch(function() {
+                    this.result = {
+                        success: false,
+                        status: 'invalid',
+                        message: 'Verification failed'
+                    };
+                }.bind(this)).then(function() {
+                    this.busy = false;
+                }.bind(this));
             }
         }
     });

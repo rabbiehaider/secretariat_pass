@@ -20,8 +20,6 @@ class Admin extends CI_Controller
     public function dashboard()
     {
         $data['title'] = "Dashboard";
-        $data['stats'] = $this->rm->dashboard_stats();
-        $data['recent'] = $this->vm->recent(8);
         $data['content'] = $this->load->view('admin/dashboard', $data, TRUE);
         $this->load->view('layouts/master_dashboard', $data);
     }
@@ -30,9 +28,117 @@ class Admin extends CI_Controller
     {
         $data['title'] = ucfirst($status) . ' Applications';
         $data['status'] = $status;
-        $data['applications'] = $this->vm->by_status($status);
         $data['content'] = $this->load->view('admin/applications', $data, TRUE);
         $this->load->view('layouts/master_dashboard', $data);
+    }
+
+    public function getDashboard()
+    {
+        $res = array('success' => false, 'message' => '');
+        try {
+            $recent = $this->vm->recent(8);
+            foreach ($recent as $row) {
+                $row->tracking_id = visitor_tracking_id($row);
+                $row->card_url = $row->status === 'approved' ? site_url('visitor/card/' . $row->qr_token) : '';
+            }
+
+            $res = array(
+                'success' => true,
+                'message' => 'Dashboard loaded',
+                'stats' => $this->rm->dashboard_stats(),
+                'recent' => $recent
+            );
+        } catch (Exception $ex) {
+            $res = array('success' => false, 'message' => $ex->getMessage());
+        }
+
+        echo json_encode($res);
+    }
+
+    public function getApplications()
+    {
+        $res = array('success' => false, 'message' => '', 'applications' => array());
+        try {
+            $status = $this->input->get('status', true) ?: 'pending';
+            $applications = $this->vm->by_status($status);
+
+            foreach ($applications as $row) {
+                $row->tracking_id = visitor_tracking_id($row);
+                $row->card_url = $row->status === 'approved' ? site_url('visitor/card/' . $row->qr_token) : '';
+            }
+
+            $res = array(
+                'success' => true,
+                'message' => 'Applications loaded',
+                'applications' => $applications
+            );
+        } catch (Exception $ex) {
+            $res = array('success' => false, 'message' => $ex->getMessage(), 'applications' => array());
+        }
+
+        echo json_encode($res);
+    }
+
+    public function approveApplication()
+    {
+        $res = array('success' => false, 'message' => '');
+        try {
+            $request = json_decode($this->input->post('data'));
+            if (!$request || empty($request->id)) {
+                throw new Exception('Invalid application request.');
+            }
+
+            $application = $this->vm->find($request->id);
+            if (!$application || $application->status !== 'pending') {
+                throw new Exception('Application is not pending.');
+            }
+
+            $pass_no = $this->vm->next_pass_no();
+            $token = $this->vm->next_qr_token();
+
+            $this->vm->approve($application->id, array(
+                'pass_no' => $pass_no,
+                'qr_token' => $token,
+                'status' => 'approved',
+                'approved_by' => $this->session->userdata('user_id'),
+                'approved_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
+            ));
+
+            $res = array(
+                'success' => true,
+                'message' => 'Application approved',
+                'card_url' => site_url('visitor/card/' . $token)
+            );
+        } catch (Exception $ex) {
+            $res = array('success' => false, 'message' => $ex->getMessage());
+        }
+
+        echo json_encode($res);
+    }
+
+    public function rejectApplication()
+    {
+        $res = array('success' => false, 'message' => '');
+        try {
+            $request = json_decode($this->input->post('data'));
+            if (!$request || empty($request->id)) {
+                throw new Exception('Invalid application request.');
+            }
+
+            $reason = !empty($request->reason) ? trim($request->reason) : 'Rejected by admin';
+            $this->vm->reject($request->id, array(
+                'status' => 'rejected',
+                'rejected_reason' => $reason,
+                'updated_at' => date('Y-m-d H:i:s')
+            ));
+
+            $res = array('success' => true, 'message' => 'Application rejected');
+        } catch (Exception $ex) {
+            $res = array('success' => false, 'message' => $ex->getMessage());
+        }
+
+        echo json_encode($res);
     }
 
     public function approve($id)

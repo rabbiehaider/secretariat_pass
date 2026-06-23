@@ -887,6 +887,10 @@ label {
     fill: currentColor;
 }
 
+.Info .icon {
+    display: none;
+}
+
 @media (min-width: 576px) {
 
     .fat-footer__copyright,
