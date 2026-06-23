@@ -6,20 +6,24 @@ class Visitor extends CI_Controller
     {
         parent::__construct();
         $this->load->model("Visitor_model", "vm", TRUE);
+        $this->load->model("Visitor_user_model", "vum", TRUE);
         date_default_timezone_set('Asia/Dhaka');
     }
 
     public function index()
     {
-        $data['title'] = "Visitor Apply";
-        $data['departments'] = $this->vm->active_departments();
-        $data['content'] = $this->load->view('visitor/apply', $data, TRUE);
-        $this->load->view('layouts/master_dashboard', $data);
+        if ($this->session->userdata('visitor_id')) {
+            redirect('visitor_panel/dashboard');
+        }
+
+        redirect('visitor_auth/register');
     }
 
     public function apply()
     {
+        $visitor = $this->require_visitor();
         $data['title'] = "Visitor Apply";
+        $data['visitor'] = $visitor;
         $data['departments'] = $this->vm->active_departments();
         $data['content'] = $this->load->view('visitor/apply', $data, TRUE);
         $this->load->view('layouts/master_dashboard', $data);
@@ -27,61 +31,52 @@ class Visitor extends CI_Controller
 
     public function submit()
     {
-        if (!$this->input->post()) {
-            redirect('/');
+        $res = array('success' => false, 'message' => '');
+        $visitor = $this->require_visitor();
+
+        try {
+            $application = json_decode($this->input->post('data'));
+            if (!$application) {
+                throw new Exception('Invalid request data.');
+            }
+
+            $phone = $visitor->phone;
+            if (!preg_match('/^01[13-9][\d]{8}$/', $phone)) {
+                throw new Exception('Visitor profile phone number is not valid.');
+            }
+
+            $photo = $this->vm->uploadImage($_FILES, 'photo', 'uploads/visitors', 'visitor');
+            if (!$photo) {
+                throw new Exception('Visitor photo is required. Please upload a JPG or PNG image under 2MB.');
+            }
+
+            $payload = array(
+                'visitor_id' => $visitor->id,
+                'name' => $visitor->name,
+                'phone' => $phone,
+                'nid' => $visitor->nid,
+                'address' => $visitor->address,
+                'purpose' => trim($application->purpose),
+                'visit_to' => trim($application->visit_to),
+                'department_id' => (int) $application->department_id,
+                'visit_date' => $application->visit_date,
+                'photo' => $photo,
+                'status' => 'pending',
+                'created_at' => date('Y-m-d H:i:s')
+            );
+
+            $id = $this->vm->create($payload);
+            $res = array(
+                'success' => true,
+                'message' => 'Application submitted',
+                'application_id' => $id,
+                'redirect' => site_url('visitor_panel/dashboard')
+            );
+        } catch (Exception $ex) {
+            $res = array('success' => false, 'message' => $ex->getMessage());
         }
 
-        $phone = trim($this->input->post('phone', true));
-        if (!preg_match('/^01[13-9][\d]{8}$/', $phone)) {
-            $this->session->set_flashdata('apply_error', 'Please enter a valid Bangladeshi mobile number.');
-            redirect('/');
-        }
-
-        $photo = $this->upload_photo();
-
-        $payload = array(
-            'name' => trim($this->input->post('name', true)),
-            'phone' => $phone,
-            'nid' => trim($this->input->post('nid', true)),
-            'address' => trim($this->input->post('address', true)),
-            'purpose' => trim($this->input->post('purpose', true)),
-            'visit_to' => trim($this->input->post('visit_to', true)),
-            'department_id' => (int) $this->input->post('department_id', true),
-            'visit_date' => $this->input->post('visit_date', true),
-            'photo' => $photo,
-            'status' => 'pending',
-            'created_at' => date('Y-m-d H:i:s')
-        );
-
-        $id = $this->vm->create($payload);
-        redirect('visitor/success/' . $id);
-    }
-
-    private function upload_photo()
-    {
-        if (empty($_FILES['photo']['name'])) {
-            return null;
-        }
-
-        $upload_path = FCPATH . 'uploads/visitors/';
-        if (!is_dir($upload_path)) {
-            mkdir($upload_path, 0755, true);
-        }
-
-        $config = array(
-            'upload_path' => $upload_path,
-            'allowed_types' => 'jpg|jpeg|png',
-            'max_size' => 2048,
-            'encrypt_name' => true
-        );
-
-        $this->load->library('upload', $config);
-        if (!$this->upload->do_upload('photo')) {
-            return null;
-        }
-
-        $file = $this->upload->data();
-        return 'uploads/visitors/' . $file['file_name'];
+        echo json_encode($res);
     }
 
     public function success($id)
@@ -120,8 +115,8 @@ class Visitor extends CI_Controller
 
     public function my_card($id)
     {
-        $phone = trim($this->input->get('phone', true));
-        $data['application'] = $this->vm->find_for_visitor((int) $id, $phone);
+        $visitor = $this->require_visitor();
+        $data['application'] = $this->vm->find_for_logged_visitor((int) $id, $visitor->id);
 
         if (!$data['application'] || $data['application']->status !== 'approved') {
             show_404();
@@ -130,6 +125,21 @@ class Visitor extends CI_Controller
         $data['title'] = "Visitor Card";
         $data['content'] = $this->load->view('visitor/card', $data, TRUE);
         $this->load->view('layouts/master_dashboard', $data);
+    }
+
+    private function require_visitor()
+    {
+        if (!$this->session->userdata('visitor_id')) {
+            redirect('visitor_auth/login');
+        }
+
+        $visitor = $this->vum->find_active($this->session->userdata('visitor_id'));
+        if (!$visitor) {
+            $this->session->unset_userdata(array('visitor_id', 'visitor_name', 'visitor_email', 'visitor_phone'));
+            redirect('visitor_auth/login');
+        }
+
+        return $visitor;
     }
 
     public function card($token)

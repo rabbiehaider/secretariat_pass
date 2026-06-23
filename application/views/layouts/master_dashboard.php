@@ -39,8 +39,14 @@ if (!function_exists('html_escape')) {
 		</button>
 		<div class="collapse navbar-collapse" id="mainNav">
 			<ul class="navbar-nav ml-auto">
-				<li class="nav-item"><a class="nav-link" href="<?php echo site_url('/'); ?>">Apply</a></li>
-				<li class="nav-item"><a class="nav-link" href="<?php echo site_url('visitor/status'); ?>">Status</a></li>
+				<?php if ($this->session->userdata('visitor_id')): ?>
+					<li class="nav-item"><a class="nav-link" href="<?php echo site_url('visitor_panel/dashboard'); ?>">Visitor Dashboard</a></li>
+					<li class="nav-item"><a class="nav-link" href="<?php echo site_url('visitor/apply'); ?>">Apply</a></li>
+					<li class="nav-item"><a class="nav-link" href="<?php echo site_url('visitor_auth/logout'); ?>">Visitor Logout</a></li>
+				<?php else: ?>
+					<li class="nav-item"><a class="nav-link" href="<?php echo site_url('visitor_auth/register'); ?>">Register</a></li>
+					<li class="nav-item"><a class="nav-link" href="<?php echo site_url('visitor_auth/login'); ?>">Visitor Login</a></li>
+				<?php endif; ?>
 				<li class="nav-item"><a class="nav-link" href="<?php echo site_url('gate/scanner'); ?>">Gate</a></li>
 				<li class="nav-item"><a class="nav-link" href="<?php echo site_url('admin/dashboard'); ?>">Admin</a></li>
 				<?php if ($this->session->userdata('user_id')): ?>

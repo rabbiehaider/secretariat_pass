@@ -269,7 +269,7 @@ label {
     border-radius: 50%;
     color: #17653e;
     display: inline-flex;
-    font-size: 30px;
+    font-size: 20px;
     font-weight: 700;
     height: 64px;
     justify-content: center;
@@ -363,6 +363,56 @@ label {
 
 .apply-submit {
     margin-top: 18px;
+}
+
+.profile-strip {
+    background: #f6f9fb;
+    border: 1px solid #dce3ea;
+    border-radius: 8px;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: 18px;
+    padding: 14px;
+}
+
+.profile-strip span,
+.profile-summary p {
+    color: #52616f;
+}
+
+.profile-strip span {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.profile-strip strong {
+    color: #172638;
+    display: block;
+    overflow-wrap: anywhere;
+}
+
+.visitor-dashboard-grid {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: 280px minmax(0, 1fr);
+}
+
+.profile-summary h2 {
+    font-size: 24px;
+    margin-bottom: 8px;
+    overflow-wrap: anywhere;
+}
+
+.profile-summary p {
+    margin-bottom: 8px;
+    overflow-wrap: anywhere;
+}
+
+.profile-panel .card-grid {
+    margin-bottom: 0;
 }
 
 .visitor-card {
@@ -669,7 +719,9 @@ label {
 
     .stats-grid,
     .scanner-layout,
-    .apply-grid {
+    .apply-grid,
+    .profile-strip,
+    .visitor-dashboard-grid {
         grid-template-columns: 1fr;
     }
 

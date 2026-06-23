@@ -57,7 +57,7 @@
 
             <?php if ($application->status === 'approved'): ?>
                 <div class="alert alert-success mt-3">Your pass has been approved. Show the QR card at the gate.</div>
-                <a class="btn btn-success" href="<?php echo site_url('visitor/my_card/' . $application->id . '?phone=' . rawurlencode($application->phone)); ?>">View QR Card</a>
+                <a class="btn btn-success" href="<?php echo site_url('visitor/card/' . $application->qr_token); ?>">View QR Card</a>
             <?php elseif ($application->status === 'pending'): ?>
                 <div class="alert alert-warning mt-3">Your application is waiting for admin approval.</div>
             <?php else: ?>

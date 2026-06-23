@@ -13,6 +13,33 @@ class Visitor_model extends CI_Model
         return $this->db->insert_id();
     }
 
+    public function uploadImage($imgFile, $image, $dirName, $fileName = null)
+    {
+        if (empty($imgFile[$image]["name"])) {
+            return null;
+        }
+
+        if (!file_exists($dirName)) {
+            mkdir($dirName, 0777, true);
+        }
+
+        $name = basename($imgFile[$image]["name"]);
+        $file_ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+        if (!in_array($file_ext, array('jpg', 'jpeg', 'png'))) {
+            return null;
+        }
+
+        $prefix = $fileName ? str_replace(" ", "_", $fileName) : 'visitor';
+        $fileNewName = $prefix . '_' . uniqid() . '.' . $file_ext;
+        $target_file = rtrim($dirName, '/') . '/' . $fileNewName;
+
+        if (move_uploaded_file($imgFile[$image]["tmp_name"], $target_file)) {
+            return $target_file;
+        }
+
+        return null;
+    }
+
     public function find($id)
     {
         return $this->db
@@ -62,6 +89,38 @@ class Visitor_model extends CI_Model
             ->where('visitor_applications.qr_token', $token)
             ->get('visitor_applications')
             ->row();
+    }
+
+    public function find_for_logged_visitor($id, $visitor_id)
+    {
+        return $this->db
+            ->select('visitor_applications.*, departments.name AS department_name')
+            ->join('departments', 'departments.id = visitor_applications.department_id', 'left')
+            ->where('visitor_applications.id', (int) $id)
+            ->where('visitor_applications.visitor_id', (int) $visitor_id)
+            ->get('visitor_applications')
+            ->row();
+    }
+
+    public function by_visitor($visitor_id)
+    {
+        return $this->db
+            ->select('visitor_applications.*, departments.name AS department_name')
+            ->join('departments', 'departments.id = visitor_applications.department_id', 'left')
+            ->where('visitor_applications.visitor_id', (int) $visitor_id)
+            ->order_by('visitor_applications.id', 'DESC')
+            ->get('visitor_applications')
+            ->result();
+    }
+
+    public function visitor_stats($visitor_id)
+    {
+        return array(
+            'total' => $this->db->where('visitor_id', (int) $visitor_id)->count_all_results('visitor_applications'),
+            'pending' => $this->db->where('visitor_id', (int) $visitor_id)->where('status', 'pending')->count_all_results('visitor_applications'),
+            'approved' => $this->db->where('visitor_id', (int) $visitor_id)->where('status', 'approved')->count_all_results('visitor_applications'),
+            'rejected' => $this->db->where('visitor_id', (int) $visitor_id)->where('status', 'rejected')->count_all_results('visitor_applications')
+        );
     }
 
     public function by_status($status)

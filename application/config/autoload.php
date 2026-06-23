@@ -13,4 +13,4 @@ $autoload['config'] = array();
 
 $autoload['language'] = array();
 
-$autoload['model'] = array('Gate_model', 'Report_model', 'User_model', 'Visitor_model');
+$autoload['model'] = array('Gate_model', 'Report_model', 'User_model', 'Visitor_model', 'Visitor_user_model');

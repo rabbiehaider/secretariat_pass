@@ -10,7 +10,7 @@ $db['default'] = array(
 
 	'username' => 'root',
 	'password' => '',
-	'database' => 'secretariat_pass',
+	'database' => 'secretariat-visitor-pass',
 
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
