@@ -96,9 +96,17 @@ new Vue({
             });
         },
         rejectApplication(application) {
-            let reason = prompt('Reject reason', 'Rejected by admin');
-            if (reason === null) {
-                return;
+            let reason = '';
+            while (true) {
+                reason = prompt('Please enter a mandatory Cancel Note (reason for rejection):');
+                if (reason === null) {
+                    return;
+                }
+                reason = reason.trim();
+                if (reason !== '') {
+                    break;
+                }
+                alert('Cancel Note is mandatory. You cannot reject an application without a reason.');
             }
 
             let fd = new FormData();

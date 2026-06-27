@@ -126,7 +126,11 @@ class Admin extends CI_Controller
                 throw new Exception('Invalid application request.');
             }
 
-            $reason = !empty($request->reason) ? trim($request->reason) : 'Rejected by admin';
+            $reason = isset($request->reason) ? trim($request->reason) : '';
+            if (empty($reason)) {
+                throw new Exception('Cancel Note is required for rejection.');
+            }
+
             $this->vm->reject($request->id, array(
                 'status' => 'rejected',
                 'rejected_reason' => $reason,
@@ -166,12 +170,118 @@ class Admin extends CI_Controller
     public function reject($id)
     {
         $reason = trim($this->input->post('rejected_reason', true));
+        if (empty($reason)) {
+            $this->session->set_flashdata('error', 'Cancel Note is required for rejection.');
+            redirect('admin/applications/pending');
+            return;
+        }
+
         $this->vm->reject($id, array(
             'status' => 'rejected',
-            'rejected_reason' => $reason ? $reason : 'Rejected by admin',
+            'rejected_reason' => $reason,
             'updated_at' => date('Y-m-d H:i:s')
         ));
 
         redirect('admin/applications/pending');
+    }
+
+    public function users()
+    {
+        $data['title'] = "Visitor User Accounts";
+        $data['content'] = $this->load->view('admin/users', $data, TRUE);
+        $this->load->view('layouts/master_dashboard', $data);
+    }
+
+    public function getUsers()
+    {
+        $res = array('success' => false, 'message' => '', 'users' => array());
+        try {
+            $this->load->model('Visitor_user_model', 'vum', TRUE);
+            $users = $this->vum->get_all_users();
+            foreach ($users as $row) {
+                $row->photo_url = $row->photo ? base_url($row->photo) : '';
+            }
+            $res = array('success' => true, 'message' => 'Users loaded', 'users' => $users);
+        } catch (Exception $ex) {
+            $res = array('success' => false, 'message' => $ex->getMessage());
+        }
+        echo json_encode($res);
+    }
+
+    public function approveUser()
+    {
+        $res = array('success' => false, 'message' => '');
+        try {
+            $request = json_decode($this->input->post('data'));
+            if (!$request || empty($request->id)) {
+                throw new Exception('Invalid user request.');
+            }
+            $this->load->model('Visitor_user_model', 'vum', TRUE);
+            $this->vum->update($request->id, array('status' => 1));
+            $res = array('success' => true, 'message' => 'User account approved successfully.');
+        } catch (Exception $ex) {
+            $res = array('success' => false, 'message' => $ex->getMessage());
+        }
+        echo json_encode($res);
+    }
+
+    public function rejectUser()
+    {
+        $res = array('success' => false, 'message' => '');
+        try {
+            $request = json_decode($this->input->post('data'));
+            if (!$request || empty($request->id)) {
+                throw new Exception('Invalid user request.');
+            }
+            $this->load->model('Visitor_user_model', 'vum', TRUE);
+            $this->vum->update($request->id, array('status' => 2));
+            $res = array('success' => true, 'message' => 'User account suspended successfully.');
+        } catch (Exception $ex) {
+            $res = array('success' => false, 'message' => $ex->getMessage());
+        }
+        echo json_encode($res);
+    }
+
+    public function scanner()
+    {
+        $data['title'] = "Admin QR Code Scanner";
+        $data['content'] = $this->load->view('admin/scanner', $data, TRUE);
+        $this->load->view('layouts/master_dashboard', $data);
+    }
+
+    public function scanner_details()
+    {
+        $res = array('success' => false, 'message' => '');
+        try {
+            $token = trim($this->input->get('token', true));
+            if (empty($token)) {
+                throw new Exception('QR Token is required.');
+            }
+
+            $application = $this->vm->find_by_token($token);
+            if (!$application) {
+                throw new Exception('Visitor pass not found in database.');
+            }
+
+            $gate_logs = $this->db
+                ->where('application_id', $application->id)
+                ->order_by('entry_time', 'DESC')
+                ->get('gate_logs')
+                ->result();
+
+            $application->tracking_id = visitor_tracking_id($application);
+            $application->photo_url = $application->photo ? base_url($application->photo) : '';
+
+            $res = array(
+                'success' => true,
+                'message' => 'Details loaded successfully.',
+                'application' => $application,
+                'gate_logs' => $gate_logs
+            );
+        } catch (Exception $ex) {
+            $res = array('success' => false, 'message' => $ex->getMessage());
+        }
+
+        echo json_encode($res);
     }
 }

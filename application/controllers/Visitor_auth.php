@@ -38,8 +38,8 @@ class Visitor_auth extends CI_Controller
 
             $res = array(
                 'success' => true,
-                'message' => 'Registration successful',
-                'redirect' => site_url('visitor_panel/dashboard')
+                'message' => 'Registration successful. Your account is pending admin approval.',
+                'redirect' => site_url('visitor_auth/login')
             );
         } catch (Exception $ex) {
             $res = array('success' => false, 'message' => $ex->getMessage());
@@ -72,10 +72,18 @@ class Visitor_auth extends CI_Controller
 
             $login = trim($request->login);
             $password = isset($request->password) ? $request->password : '';
-            $visitor = $this->vum->find_by_login($login);
+            $visitor = $this->vum->find_by_login_all_status($login);
 
             if (!$visitor || !password_verify($password, $visitor->password)) {
                 throw new Exception('Invalid email, phone, or password.');
+            }
+
+            if ($visitor->status == 0) {
+                throw new Exception('Your account is pending admin approval.');
+            }
+
+            if ($visitor->status != 1) {
+                throw new Exception('Your account is deactivated or rejected.');
             }
 
             $this->login_visitor($visitor);
@@ -135,6 +143,34 @@ class Visitor_auth extends CI_Controller
             return 'This phone number is already registered.';
         }
 
+        $photo_path = null;
+        // Handle base64 photo capture
+        if (!empty($visitor->photo_base64)) {
+            $imgData = $visitor->photo_base64;
+            if (preg_match('/^data:image\/(\w+);base64,/', $imgData, $type)) {
+                $imgData = substr($imgData, strpos($imgData, ',') + 1);
+                $type = strtolower($type[1]);
+                if (in_array($type, array('jpg', 'jpeg', 'png'))) {
+                    $imgData = base64_decode($imgData);
+                    if ($imgData !== false) {
+                        $dirName = 'uploads/visitors';
+                        if (!file_exists($dirName)) {
+                            mkdir($dirName, 0777, true);
+                        }
+                        $fileNewName = 'visitor_user_' . uniqid() . '.' . $type;
+                        $photo_path = $dirName . '/' . $fileNewName;
+                        file_put_contents($photo_path, $imgData);
+                    }
+                }
+            }
+        }
+
+        // Handle uploaded file
+        if (!$photo_path && !empty($_FILES['photo']['name'])) {
+            $this->load->model('Visitor_model', 'vm', TRUE);
+            $photo_path = $this->vm->uploadImage($_FILES, 'photo', 'uploads/visitors', 'visitor_user');
+        }
+
         $id = $this->vum->create(array(
             'name' => $name,
             'email' => $email,
@@ -142,13 +178,11 @@ class Visitor_auth extends CI_Controller
             'password' => password_hash($password, PASSWORD_BCRYPT),
             'nid' => $nid,
             'address' => $address,
-            'status' => 1,
+            'photo' => $photo_path,
+            'status' => 0, // Pending approval by default
             'created_at' => date('Y-m-d H:i:s'),
             'last_login_at' => date('Y-m-d H:i:s')
         ));
-
-        $visitor = $this->vum->find($id);
-        $this->login_visitor($visitor);
 
         return true;
     }

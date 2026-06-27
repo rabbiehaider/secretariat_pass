@@ -17,11 +17,19 @@
         </div>
         <div class="panel result-panel" :class="resultClass">
             <h2>{{ result.message || 'Waiting for scan' }}</h2>
-            <div v-if="result.visitor">
-                <p><strong>Name:</strong> {{ result.visitor.name }}</p>
-                <p><strong>Pass:</strong> {{ result.visitor.pass_no }}</p>
-                <p><strong>Visit To:</strong> {{ result.visitor.visit_to }}</p>
-                <p><strong>Purpose:</strong> {{ result.visitor.purpose }}</p>
+            <div v-if="result.visitor" class="row mt-3">
+                <div class="col-md-8 text-left">
+                    <p><strong>Name:</strong> {{ result.visitor.name }}</p>
+                    <p><strong>Pass:</strong> {{ result.visitor.pass_no }}</p>
+                    <p><strong>Visit To:</strong> {{ result.visitor.visit_to }}</p>
+                    <p><strong>Purpose:</strong> {{ result.visitor.purpose }}</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <img v-if="result.visitor.photo" :src="result.visitor.photo" alt="Profile Verification" class="img-thumbnail rounded" style="max-height: 180px; object-fit: cover;">
+                    <div v-else class="text-muted p-4 border rounded" style="border-style: dashed !important; border-width: 2px;">
+                        No Image
+                    </div>
+                </div>
             </div>
         </div>
     </div>

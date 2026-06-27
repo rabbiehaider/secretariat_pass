@@ -96,4 +96,63 @@ class Visitor_panel extends CI_Controller
         $data['content'] = $this->load->view('visitor/card', $data, TRUE);
         $this->load->view('layouts/master_dashboard', $data);
     }
+
+    public function updatePhoto()
+    {
+        $res = array('success' => false, 'message' => '');
+        try {
+            $visitor = $this->current_visitor();
+
+            $photo_path = null;
+            $request = json_decode($this->input->post('data'));
+
+            // Handle base64 photo capture
+            if ($request && !empty($request->photo_base64)) {
+                $imgData = $request->photo_base64;
+                if (preg_match('/^data:image\/(\w+);base64,/', $imgData, $type)) {
+                    $imgData = substr($imgData, strpos($imgData, ',') + 1);
+                    $type = strtolower($type[1]);
+                    if (in_array($type, array('jpg', 'jpeg', 'png'))) {
+                        $imgData = base64_decode($imgData);
+                        if ($imgData !== false) {
+                            $dirName = 'uploads/visitors';
+                            if (!file_exists($dirName)) {
+                                mkdir($dirName, 0777, true);
+                            }
+                            $fileNewName = 'visitor_user_' . uniqid() . '.' . $type;
+                            $photo_path = $dirName . '/' . $fileNewName;
+                            file_put_contents($photo_path, $imgData);
+                        }
+                    }
+                }
+            }
+
+            // Handle uploaded file
+            if (!$photo_path && !empty($_FILES['photo']['name'])) {
+                $this->load->model('Visitor_model', 'vm', TRUE);
+                $photo_path = $this->vm->uploadImage($_FILES, 'photo', 'uploads/visitors', 'visitor_user');
+            }
+
+            if (!$photo_path) {
+                throw new Exception('No image file or camera capture received.');
+            }
+
+            // Delete old photo if exists
+            if ($visitor->photo && file_exists($visitor->photo)) {
+                @unlink($visitor->photo);
+            }
+
+            $this->vum->update($visitor->id, array('photo' => $photo_path));
+
+            $res = array(
+                'success' => true,
+                'message' => 'Profile picture updated successfully.',
+                'photo_url' => base_url($photo_path)
+            );
+        } catch (Exception $ex) {
+            $res = array('success' => false, 'message' => $ex->getMessage());
+        }
+
+        echo json_encode($res);
+    }
 }

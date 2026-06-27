@@ -41,6 +41,29 @@ class Visitor_user_model extends CI_Model
             ->row();
     }
 
+    public function find_by_login_all_status($login)
+    {
+        return $this->db
+            ->where("(email = " . $this->db->escape($login) . " OR phone = " . $this->db->escape($login) . ")", null, false)
+            ->get('visitor_users')
+            ->row();
+    }
+
+    public function update($id, $data)
+    {
+        return $this->db
+            ->where('id', (int) $id)
+            ->update('visitor_users', $data);
+    }
+
+    public function get_all_users()
+    {
+        return $this->db
+            ->order_by('id', 'DESC')
+            ->get('visitor_users')
+            ->result();
+    }
+
     public function email_exists($email)
     {
         return $this->db->where('email', $email)->count_all_results('visitor_users') > 0;

@@ -66,6 +66,17 @@ class Gate extends CI_Controller
 
         $this->gm->log($application->id, $application->pass_no, $token, 'valid', 'Entry allowed');
 
+        $photo = '';
+        if (!empty($application->photo)) {
+            $photo = base_url($application->photo);
+        } else if (!empty($application->visitor_id)) {
+            $this->load->model('Visitor_user_model', 'vum', TRUE);
+            $v_user = $this->vum->find($application->visitor_id);
+            if ($v_user && !empty($v_user->photo)) {
+                $photo = base_url($v_user->photo);
+            }
+        }
+
         return array(
             'success' => true,
             'status' => 'valid',
@@ -75,7 +86,8 @@ class Gate extends CI_Controller
                 'phone' => $application->phone,
                 'pass_no' => $application->pass_no,
                 'visit_to' => $application->visit_to,
-                'purpose' => $application->purpose
+                'purpose' => $application->purpose,
+                'photo' => $photo
             )
         );
     }
