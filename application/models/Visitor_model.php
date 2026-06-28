@@ -83,6 +83,12 @@ class Visitor_model extends CI_Model
 
     public function find_by_token($token)
     {
+        $token = trim($token);
+        if (filter_var($token, FILTER_VALIDATE_URL) || preg_match('/https?:\/\//i', $token)) {
+            $parts = explode('/', rtrim($token, '/'));
+            $token = end($parts);
+        }
+
         return $this->db
             ->select('visitor_applications.*, departments.name AS department_name')
             ->join('departments', 'departments.id = visitor_applications.department_id', 'left')

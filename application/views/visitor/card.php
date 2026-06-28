@@ -66,7 +66,7 @@
 <script>
     var qrSize = window.matchMedia('(max-width: 576px)').matches ? 176 : 168;
     new QRCode(document.getElementById('qrCode'), {
-        text: '<?php echo html_escape($application->qr_token); ?>',
+        text: '<?php echo site_url('visitor/card/' . $application->qr_token); ?>',
         width: qrSize,
         height: qrSize,
         correctLevel: QRCode.CorrectLevel.L

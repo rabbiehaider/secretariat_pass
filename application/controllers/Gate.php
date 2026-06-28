@@ -34,6 +34,12 @@ class Gate extends CI_Controller
 
     private function verify_token($token)
     {
+        $token = trim($token);
+        if (filter_var($token, FILTER_VALIDATE_URL) || preg_match('/https?:\/\//i', $token)) {
+            $parts = explode('/', rtrim($token, '/'));
+            $token = end($parts);
+        }
+
         if (!$token) {
             return array('success' => false, 'status' => 'invalid', 'message' => 'Empty QR token');
         }

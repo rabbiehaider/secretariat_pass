@@ -254,6 +254,11 @@ class Admin extends CI_Controller
         $res = array('success' => false, 'message' => '');
         try {
             $token = trim($this->input->get('token', true));
+            if (filter_var($token, FILTER_VALIDATE_URL) || preg_match('/https?:\/\//i', $token)) {
+                $parts = explode('/', rtrim($token, '/'));
+                $token = end($parts);
+            }
+
             if (empty($token)) {
                 throw new Exception('QR Token is required.');
             }

@@ -54,17 +54,12 @@
                 </div>
             </div>
 
-            <aside class="photo-upload-panel">
-                <div class="form-section-title">Mandatory Visitor Photo</div>
-                <div class="photo-preview">
-                    <img v-if="photoPreview" :src="photoPreview" alt="Selected visitor photo">
-                    <div v-else class="photo-preview-empty">Photo Required</div>
+            <aside class="photo-upload-panel text-center">
+                <div class="form-section-title">Visitor Photo</div>
+                <div class="photo-preview mb-2">
+                    <img src="<?php echo $visitor->photo ? base_url($visitor->photo) : "data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%23ccc\'><path d=\'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4\'/></svg>"; ?>" alt="Registered profile photo" class="img-thumbnail rounded" style="max-height: 180px; width: 180px; object-fit: cover;">
                 </div>
-                <label class="photo-picker">
-                    <input type="file" accept="image/jpeg,image/png" @change="previewPhoto" required>
-                    <span>{{ photoName || 'Choose Image' }}</span>
-                </label>
-                <p class="photo-help">JPG or PNG image, maximum 2MB.</p>
+                <p class="photo-help text-muted"><small>Your registered profile photo will be printed on the visitor pass.</small></p>
             </aside>
         </div>
 
@@ -85,22 +80,13 @@ new Vue({
                 visit_to: '',
                 department_id: '',
                 purpose: ''
-            },
-            selectedFile: null,
-            photoPreview: '',
-            photoName: ''
+            }
         }
     },
     methods: {
         saveApplication() {
-            if (this.selectedFile == null) {
-                alert('Visitor photo is required.');
-                return;
-            }
-
             this.submitting = true;
             let fd = new FormData();
-            fd.append('photo', this.selectedFile);
             fd.append('data', JSON.stringify(this.application));
 
             axios.post('<?php echo site_url('visitor_apply'); ?>', fd).then(res => {
@@ -114,20 +100,6 @@ new Vue({
             }).then(() => {
                 this.submitting = false;
             });
-        },
-        previewPhoto(event) {
-            let file = event.target.files && event.target.files[0];
-            this.photoPreview = '';
-            this.photoName = '';
-            this.selectedFile = null;
-
-            if (!file) {
-                return;
-            }
-
-            this.photoName = file.name;
-            this.photoPreview = URL.createObjectURL(file);
-            this.selectedFile = file;
         }
     }
 });

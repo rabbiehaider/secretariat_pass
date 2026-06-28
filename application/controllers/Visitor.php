@@ -45,9 +45,19 @@ class Visitor extends CI_Controller
                 throw new Exception('Visitor profile phone number is not valid.');
             }
 
-            $photo = $this->vm->uploadImage($_FILES, 'photo', 'uploads/visitors', 'visitor');
+            $photo = $visitor->photo;
             if (!$photo) {
-                throw new Exception('Visitor photo is required. Please upload a JPG or PNG image under 2MB.');
+                throw new Exception('Visitor profile photo not found. Please upload a photo in your profile setup first.');
+            }
+
+            $file_ext = pathinfo($photo, PATHINFO_EXTENSION);
+            $app_photo = 'uploads/visitors/app_' . uniqid() . '.' . $file_ext;
+            if (file_exists($photo)) {
+                if (!file_exists('uploads/visitors')) {
+                    mkdir('uploads/visitors', 0777, true);
+                }
+                copy($photo, $app_photo);
+                $photo = $app_photo;
             }
 
             $payload = array(
