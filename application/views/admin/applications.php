@@ -5,6 +5,7 @@
             <h1>{{ pageTitle }}</h1>
         </div>
         <div class="col text-right">
+            <a class="btn btn-outline-primary" href="<?php echo site_url('admin/applications/all'); ?>">All</a>
             <a class="btn btn-outline-primary" href="<?php echo site_url('admin/applications/pending'); ?>">Pending</a>
             <a class="btn btn-outline-primary" href="<?php echo site_url('admin/applications/approved'); ?>">Approved</a>
             <a class="btn btn-outline-primary" href="<?php echo site_url('admin/applications/rejected'); ?>">Rejected</a>
@@ -52,75 +53,79 @@
 </div>
 
 <script>
-new Vue({
-    el: '#adminApplications',
-    data() {
-        return {
-            status: '<?php echo html_escape($status); ?>',
-            applications: []
-        }
-    },
-    computed: {
-        pageTitle() {
-            return this.status.charAt(0).toUpperCase() + this.status.slice(1) + ' Applications';
-        }
-    },
-    created() {
-        this.getApplications();
-    },
-    methods: {
-        getApplications() {
-            axios.get('<?php echo site_url('get_applications'); ?>?status=' + this.status).then(res => {
-                let r = res.data;
-                if (r.success) {
-                    this.applications = r.applications;
-                } else {
-                    alert(r.message);
-                }
-            });
-        },
-        approveApplication(application) {
-            if (!confirm('Approve this application?')) {
-                return;
+    new Vue({
+        el: '#adminApplications',
+        data() {
+            return {
+                status: '<?php echo html_escape($status); ?>',
+                applications: []
             }
-
-            let fd = new FormData();
-            fd.append('data', JSON.stringify({ id: application.id }));
-
-            axios.post('<?php echo site_url('approve_application'); ?>', fd).then(res => {
-                let r = res.data;
-                alert(r.message);
-                if (r.success) {
-                    this.getApplications();
-                }
-            });
         },
-        rejectApplication(application) {
-            let reason = '';
-            while (true) {
-                reason = prompt('Please enter a mandatory Cancel Note (reason for rejection):');
-                if (reason === null) {
+        computed: {
+            pageTitle() {
+                return this.status.charAt(0).toUpperCase() + this.status.slice(1) + ' Applications';
+            }
+        },
+        created() {
+            this.getApplications();
+        },
+        methods: {
+            getApplications() {
+                axios.get('<?php echo site_url('get_applications'); ?>?status=' + this.status).then(res => {
+                    let r = res.data;
+                    if (r.success) {
+                        this.applications = r.applications;
+                    } else {
+                        alert(r.message);
+                    }
+                });
+            },
+            approveApplication(application) {
+                if (!confirm('Approve this application?')) {
                     return;
                 }
-                reason = reason.trim();
-                if (reason !== '') {
-                    break;
+
+                let fd = new FormData();
+                fd.append('data', JSON.stringify({
+                    id: application.id
+                }));
+
+                axios.post('<?php echo site_url('approve_application'); ?>', fd).then(res => {
+                    let r = res.data;
+                    alert(r.message);
+                    if (r.success) {
+                        this.getApplications();
+                    }
+                });
+            },
+            rejectApplication(application) {
+                let reason = '';
+                while (true) {
+                    reason = prompt('Please enter a mandatory Cancel Note (reason for rejection):');
+                    if (reason === null) {
+                        return;
+                    }
+                    reason = reason.trim();
+                    if (reason !== '') {
+                        break;
+                    }
+                    alert('Cancel Note is mandatory. You cannot reject an application without a reason.');
                 }
-                alert('Cancel Note is mandatory. You cannot reject an application without a reason.');
+
+                let fd = new FormData();
+                fd.append('data', JSON.stringify({
+                    id: application.id,
+                    reason: reason
+                }));
+
+                axios.post('<?php echo site_url('reject_application'); ?>', fd).then(res => {
+                    let r = res.data;
+                    alert(r.message);
+                    if (r.success) {
+                        this.getApplications();
+                    }
+                });
             }
-
-            let fd = new FormData();
-            fd.append('data', JSON.stringify({ id: application.id, reason: reason }));
-
-            axios.post('<?php echo site_url('reject_application'); ?>', fd).then(res => {
-                let r = res.data;
-                alert(r.message);
-                if (r.success) {
-                    this.getApplications();
-                }
-            });
         }
-    }
-});
+    });
 </script>
-

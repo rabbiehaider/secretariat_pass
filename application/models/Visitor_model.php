@@ -129,15 +129,17 @@ class Visitor_model extends CI_Model
         );
     }
 
-    public function by_status($status)
+    public function by_status($status = null)
     {
-        return $this->db
+        $this->db
             ->select('visitor_applications.*, departments.name AS department_name')
-            ->join('departments', 'departments.id = visitor_applications.department_id', 'left')
-            ->where('visitor_applications.status', $status)
-            ->order_by('visitor_applications.id', 'DESC')
-            ->get('visitor_applications')
-            ->result();
+            ->join('departments', 'departments.id = visitor_applications.department_id', 'left');
+
+        if (!empty($status)) {
+            $this->db->where('visitor_applications.status', $status);
+        }
+
+        return $this->db->order_by('visitor_applications.id', 'DESC')->get('visitor_applications')->result();
     }
 
     public function recent($limit)

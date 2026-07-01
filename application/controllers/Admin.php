@@ -60,6 +60,7 @@ class Admin extends CI_Controller
         $res = array('success' => false, 'message' => '', 'applications' => array());
         try {
             $status = $this->input->get('status', true) ?: 'pending';
+            $status = $status == 'all' ? '' : $status;
             $applications = $this->vm->by_status($status);
 
             foreach ($applications as $row) {

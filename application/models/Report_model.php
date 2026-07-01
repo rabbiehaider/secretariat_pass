@@ -77,7 +77,7 @@ class Report_model extends CI_Model
             ->result();
     }
 
-    public function department_report($from = null, $to = null)
+    public function department_report($from = null, $to = null, $departmentId = null)
     {
         $this->db
             ->select('departments.id, departments.name')
@@ -94,12 +94,84 @@ class Report_model extends CI_Model
         if (!empty($to)) {
             $this->db->where('DATE(visitor_applications.created_at) <=', $to);
         }
+        if (!empty($departmentId)) {
+            $this->db->where('visitor_applications.department_id =', $departmentId);
+        }
+
+        return $this->db->group_by('departments.id, departments.name')->order_by('departments.name', 'ASC')->get()->result();
+    }
+
+    public function application_report($from = null, $to = null, $filters = array())
+    {
+        $this->db
+            ->select('visitor_applications.name, visitor_applications.phone, visitor_applications.nid, visitor_applications.visit_to, departments.name AS department_name, COUNT(*) AS apply_count')
+            ->from('visitor_applications')
+            ->join('departments', 'departments.id = visitor_applications.department_id', 'left');
+
+        if (!empty($from)) {
+            $this->db->where('DATE(visitor_applications.created_at) >=', $from);
+        }
+        if (!empty($to)) {
+            $this->db->where('DATE(visitor_applications.created_at) <=', $to);
+        }
+
+        if (!empty($filters['name'])) {
+            $this->db->like('visitor_applications.name', trim($filters['name']));
+        }
+        if (!empty($filters['phone'])) {
+            $this->db->like('visitor_applications.phone', trim($filters['phone']));
+        }
+        if (!empty($filters['nid'])) {
+            $this->db->like('visitor_applications.nid', trim($filters['nid']));
+        }
+        if (!empty($filters['department_id'])) {
+            $this->db->where('visitor_applications.department_id', (int) $filters['department_id']);
+        }
+        if (!empty($filters['status'])) {
+            $this->db->where('visitor_applications.status', $filters['status']);
+        }
+
+        return $this->db
+            ->group_by('visitor_applications.department_id, visitor_applications.visit_to, visitor_applications.name, visitor_applications.phone, visitor_applications.nid')
+            ->order_by('apply_count', 'DESC')
+            ->get()
+            ->result();
+    }
+
+    public function department_application_report($from = null, $to = null, $filters = array())
+    {
+        $this->db
+            ->select('departments.id, departments.name, COUNT(visitor_applications.id) AS total_count')
+            ->from('departments')
+            ->join('visitor_applications', 'visitor_applications.department_id = departments.id', 'left');
+
+        if (!empty($from)) {
+            $this->db->where('DATE(visitor_applications.created_at) >=', $from);
+        }
+        if (!empty($to)) {
+            $this->db->where('DATE(visitor_applications.created_at) <=', $to);
+        }
+
+        if (!empty($filters['name'])) {
+            $this->db->like('visitor_applications.name', trim($filters['name']));
+        }
+        if (!empty($filters['phone'])) {
+            $this->db->like('visitor_applications.phone', trim($filters['phone']));
+        }
+        if (!empty($filters['nid'])) {
+            $this->db->like('visitor_applications.nid', trim($filters['nid']));
+        }
+        if (!empty($filters['department_id'])) {
+            $this->db->where('visitor_applications.department_id', (int) $filters['department_id']);
+        }
+        if (!empty($filters['status'])) {
+            $this->db->where('visitor_applications.status', $filters['status']);
+        }
 
         return $this->db
             ->group_by('departments.id, departments.name')
-            ->order_by('departments.name', 'ASC')
+            ->order_by('total_count', 'DESC')
             ->get()
             ->result();
     }
 }
-

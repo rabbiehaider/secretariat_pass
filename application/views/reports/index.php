@@ -1,9 +1,91 @@
+<style>
+    @media print {
+
+        nav,
+        footer,
+        form,
+        .btn,
+        .page-title,
+        .stats-grid,
+        .page-kicker {
+            display: none !important;
+        }
+
+        body {
+            background: #fff !important;
+            color: #000 !important;
+        }
+
+        .container {
+            max-width: 100% !important;
+            width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .panel {
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            background: transparent !important;
+        }
+
+        .print-only {
+            display: block !important;
+        }
+
+        .row {
+            display: block !important;
+        }
+
+        .col-lg-5,
+        .col-lg-7 {
+            width: 100% !important;
+            max-width: 100% !important;
+            flex: 0 0 100% !important;
+            margin-bottom: 30px !important;
+            page-break-inside: avoid !important;
+        }
+
+        table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd !important;
+            padding: 6px !important;
+        }
+    }
+
+    .print-only {
+        display: none;
+    }
+</style>
+
 <div id="reportApp" class="container">
-    <div class="page-title">
-        <div>
+    <!-- Print Header -->
+    <div class="print-only mb-4">
+        <div style="display: flex; align-items: center; border-bottom: 3px double #152535; padding-bottom: 15px; margin-bottom: 20px;">
+            <img src="<?php echo base_url('assets/images/Bangladesh_Secretariat.png'); ?>" alt="Emblem" style="height: 80px; width: 80px; margin-right: 20px;">
+            <div>
+                <div style="font-size: 13px; text-transform: uppercase; color: #555; letter-spacing: 0.5px;">Government of the People's Republic of Bangladesh</div>
+                <h1 style="font-size: 26px; font-weight: bold; color: #152535; margin: 2px 0;">Bangladesh Secretariat</h1>
+                <h3 style="font-size: 18px; color: #1f6f54; margin: 2px 0; font-weight: bold;">Gate Pass Entry Logs Report</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-title row align-items-center">
+        <div class="col">
             <span class="page-kicker">Analytics</span>
-            <h1>Reports</h1>
+            <h1>Gate Log Reports</h1>
             <p>Date wise application, approval, and entry report.</p>
+        </div>
+        <div class="col text-right">
+            <button class="btn btn-primary" onclick="window.print()">Print</button>
+            <a class="btn btn-outline-primary" href="<?php echo site_url('report/applications'); ?>">Application Reports</a>
         </div>
     </div>
 
@@ -142,6 +224,11 @@
             </div>
         </div>
     </div>
+    <!-- Print Footer -->
+    <div class="print-only mt-5" style="border-top: 1px solid #ccc; padding-top: 10px; font-size: 12px; color: #666; display: flex; justify-content: space-between; width: 100%;">
+        <span>Bangladesh Secretariat Visitor Management System</span>
+        <span>Printed On: <?php echo date('Y-m-d H:i:s'); ?></span>
+    </div>
 </div>
 
 <script>
@@ -174,14 +261,14 @@
         },
         methods: {
             getReport() {
-                let url = '<?php echo site_url('get_report'); ?>?from=' + this.filter.from + 
-                          '&to=' + this.filter.to +
-                          '&name=' + encodeURIComponent(this.filter.name) +
-                          '&phone=' + encodeURIComponent(this.filter.phone) +
-                          '&nid=' + encodeURIComponent(this.filter.nid) +
-                          '&pass_no=' + encodeURIComponent(this.filter.pass_no) +
-                          '&department_id=' + this.filter.department_id +
-                          '&scan_status=' + this.filter.scan_status;
+                let url = '<?php echo site_url('get_report'); ?>?from=' + this.filter.from +
+                    '&to=' + this.filter.to +
+                    '&name=' + encodeURIComponent(this.filter.name) +
+                    '&phone=' + encodeURIComponent(this.filter.phone) +
+                    '&nid=' + encodeURIComponent(this.filter.nid) +
+                    '&pass_no=' + encodeURIComponent(this.filter.pass_no) +
+                    '&department_id=' + this.filter.department_id +
+                    '&scan_status=' + this.filter.scan_status;
                 axios.get(url).then(res => {
                     let r = res.data;
                     if (r.success) {
@@ -205,12 +292,17 @@
                 this.getReport();
             },
             logClass(status) {
-                switch(status) {
-                    case 'valid': return 'badge-success';
-                    case 'invalid': return 'badge-danger';
-                    case 'expired': return 'badge-warning';
-                    case 'already_used': return 'badge-info';
-                    default: return 'badge-secondary';
+                switch (status) {
+                    case 'valid':
+                        return 'badge-success';
+                    case 'invalid':
+                        return 'badge-danger';
+                    case 'expired':
+                        return 'badge-warning';
+                    case 'already_used':
+                        return 'badge-info';
+                    default:
+                        return 'badge-secondary';
                 }
             }
         }

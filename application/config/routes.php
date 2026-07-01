@@ -28,3 +28,5 @@ $route['admin/scanner']             = 'Admin/scanner';
 $route['admin/scanner_details']     = 'Admin/scanner_details';
 $route['verify_gate_pass']          = 'Gate/verify';
 $route['get_report']                = 'Report/getReport';
+$route['report/applications']       = 'Report/applications';
+$route['get_application_report']    = 'Report/getApplicationReport';
