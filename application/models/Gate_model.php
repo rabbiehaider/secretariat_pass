@@ -19,6 +19,7 @@ class Gate_model extends CI_Model
             'scanned_by' => $this->session->userdata('user_id') ?: null,
             'scan_status' => $status,
             'entry_time' => date('Y-m-d H:i:s'),
+            'scanned_ip' => $this->input->ip_address(),
             'remarks' => $remarks
         ));
     }

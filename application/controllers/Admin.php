@@ -103,6 +103,7 @@ class Admin extends CI_Controller
                 'status' => 'approved',
                 'approved_by' => $this->session->userdata('user_id'),
                 'approved_at' => date('Y-m-d H:i:s'),
+                'approved_by_ip' => $this->input->ip_address(),
                 'updated_at' => date('Y-m-d H:i:s')
             ));
 
@@ -135,6 +136,7 @@ class Admin extends CI_Controller
             $this->vm->reject($request->id, array(
                 'status' => 'rejected',
                 'rejected_reason' => $reason,
+                'approved_by_ip' => $this->input->ip_address(),
                 'updated_at' => date('Y-m-d H:i:s')
             ));
 
@@ -162,6 +164,7 @@ class Admin extends CI_Controller
             'status' => 'approved',
             'approved_by' => $this->session->userdata('user_id'),
             'approved_at' => date('Y-m-d H:i:s'),
+            'approved_by_ip' => $this->input->ip_address(),
             'updated_at' => date('Y-m-d H:i:s')
         ));
 
@@ -180,6 +183,7 @@ class Admin extends CI_Controller
         $this->vm->reject($id, array(
             'status' => 'rejected',
             'rejected_reason' => $reason,
+            'approved_by_ip' => $this->input->ip_address(),
             'updated_at' => date('Y-m-d H:i:s')
         ));
 

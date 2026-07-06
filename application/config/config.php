@@ -381,24 +381,16 @@ $config['encryption_key'] ='c4ca4238a0b923820dcc509a6f75849b';
 |	Whether to destroy session data associated with the old session ID
 |	when auto-regenerating the session ID. When set to FALSE, the data
 |	will be later deleted by the garbage collector.
-|
-| Other session cookie settings are shared with the rest of the application,
-| except for 'cookie_prefix' and 'cookie_httponly', which are ignored here.
-|
 */
-$config['sess_driver'] = 'files';
+$config['sess_driver'] = 'database';
 $config['sess_cookie_name'] = 'ci_session';
 $config['sess_expiration'] = 12 * 60 * 60;
-$config['sess_save_path'] = APPPATH.'cache';
+$config['sess_save_path'] = 'ci_sessions';
 $config['sess_match_ip'] = FALSE;
 $config['sess_time_to_update'] = 300;
 $config['sess_regenerate_destroy'] = FALSE;
 
 /*
-|--------------------------------------------------------------------------
-| Cookie Related Variables
-|--------------------------------------------------------------------------
-|
 | 'cookie_prefix'   = Set a cookie name prefix if you need to avoid collisions
 | 'cookie_domain'   = Set to .your-domain.com for site-wide cookies
 | 'cookie_path'     = Typically will be a forward slash

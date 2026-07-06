@@ -78,6 +78,9 @@ class Visitor_user_model extends CI_Model
     {
         return $this->db
             ->where('id', (int) $id)
-            ->update('visitor_users', array('last_login_at' => date('Y-m-d H:i:s')));
+            ->update('visitor_users', array(
+                'last_login_at' => date('Y-m-d H:i:s'),
+                'last_login_ip' => $this->input->ip_address()
+            ));
     }
 }

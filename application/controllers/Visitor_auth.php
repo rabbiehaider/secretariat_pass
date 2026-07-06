@@ -181,7 +181,9 @@ class Visitor_auth extends CI_Controller
             'photo' => $photo_path,
             'status' => 0, // Pending approval by default
             'created_at' => date('Y-m-d H:i:s'),
-            'last_login_at' => date('Y-m-d H:i:s')
+            'last_login_at' => date('Y-m-d H:i:s'),
+            'created_ip' => $this->input->ip_address(),
+            'last_login_ip' => $this->input->ip_address()
         ));
 
         return true;

@@ -72,7 +72,8 @@ class Visitor extends CI_Controller
                 'visit_date' => $application->visit_date,
                 'photo' => $photo,
                 'status' => 'pending',
-                'created_at' => date('Y-m-d H:i:s')
+                'created_at' => date('Y-m-d H:i:s'),
+                'created_ip' => $this->input->ip_address()
             );
 
             $id = $this->vm->create($payload);

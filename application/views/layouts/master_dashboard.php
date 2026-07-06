@@ -69,7 +69,7 @@ if (!function_exists('html_escape')) {
 	</main>
 	<footer class="fat-footer" role="contentinfo">
 		<div class="fat-footer__bottom">
-			<p class="fat-footer__copyright">&copy; <?= date('Y') ?> Bangladesh Secretariat. All Rights Reserved.</p>
+			<p class="fat-footer__copyright">Bangladesh Secretariat. &copy; <?= date('Y') ?> All Rights Reserved.</p>
 			<nav class="fat-footer__social" aria-label="Social Media">
 				<p class="fat-footer__copyright">Design & Developed By: Lalon Hossain (25208) & Rakib Hossain (25202)</p>
 			</nav>

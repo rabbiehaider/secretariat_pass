@@ -6,5 +6,12 @@ class User_model extends CI_Model
     {
         return $this->db->where('email', $email)->get('users')->row();
     }
+
+    public function update_last_login_ip($id, $ip)
+    {
+        return $this->db
+            ->where('id', (int) $id)
+            ->update('users', array('last_login_ip' => $ip));
+    }
 }
 

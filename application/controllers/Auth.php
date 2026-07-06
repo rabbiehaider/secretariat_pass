@@ -26,6 +26,7 @@ class Auth extends CI_Controller
                     'name' => $user->name,
                     'role' => $user->role
                 ));
+                $this->um->update_last_login_ip($user->id, $this->input->ip_address());
                 redirect('admin/dashboard');
             }
 
